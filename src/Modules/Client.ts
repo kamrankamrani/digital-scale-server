@@ -6,8 +6,16 @@ export function clientOnConnet(req: http.IncomingMessage) {
 }
 
 export function clientOnMessage(data: WebSocket.RawData) {
-  const message = JSON.parse(data.toString());
-  console.log("get data is ", message);
+  const msg = data.toString();
+  try {
+    const parsedMessage = JSON.parse(msg);
+    console.log("get data is ", parsedMessage);
+    return msg;
+  } catch (error) {
+    console.log("client on message error", error);
+    console.log("client message is", msg);
+    return false;
+  }
 }
 
 export function clientOnClose() {

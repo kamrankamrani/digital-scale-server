@@ -1,6 +1,7 @@
 import express from "express";
 import http from "http";
 import WebSocket, { WebSocketServer } from "ws";
+import { BroadCast } from "./Modules/BroadCast";
 import {
   clientOnClose,
   clientOnConnet,
@@ -12,18 +13,21 @@ const serverPort = 4000;
 const server = http.createServer(express);
 const wss = new WebSocketServer({ server });
 
-wss.on("connection", (client, req) => {
+wss.on("connection", (websocket, req) => {
   clientOnConnet(req);
 
-  client.on("message", (data: WebSocket.RawData) => {
-    clientOnMessage(data);
+  websocket.on("message", (data: WebSocket.RawData) => {
+    const clientData: string | boolean = clientOnMessage(data);
+    if (clientData) {
+      BroadCast(wss, clientData);
+    }
   });
 
-  client.onerror = (err: WebSocket.ErrorEvent) => {
+  websocket.onerror = (err: WebSocket.ErrorEvent) => {
     clientOnError(err);
   };
 
-  client.on("close", function () {
+  websocket.on("close", function () {
     clientOnClose();
   });
 });
